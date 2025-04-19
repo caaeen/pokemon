@@ -1,0 +1,91 @@
+import {React, useState, useEffect} from 'react'
+import Header from './header.jsx'
+import '../index.css'
+
+const Pokedex = () => {
+    const [pokemons, setPokemons] = useState([]);
+    const [nextUrl, setNextUrl] = useState("https://pokeapi.co/api/v2/pokemon?limit=10");
+    const [loading, setLoading] = useState(false);
+    const [search, setSearch] = useState("");
+  
+    const fetchPokemons = async () => {
+      if (!nextUrl) return;
+  
+      setLoading(true);
+      const res = await fetch(nextUrl);
+      const data = await res.json();
+      setNextUrl(data.next); // Save next batch URL
+  
+      const detailed = await Promise.all(
+        data.results.map(async (pokemon) => {
+          const res = await fetch(pokemon.url);
+          return await res.json();
+        })
+      );
+  
+      setPokemons((prev) => [...prev, ...detailed]); // Append
+      setLoading(false);
+    };
+  
+    useEffect(() => {
+      fetchPokemons();
+    }, []);
+  
+    const filteredPokemons = pokemons.filter((pokemon) =>
+      pokemon.name.toLowerCase().includes(search.toLowerCase())
+    );
+  
+    return (
+      <div className="pokedex w-full min-h-svh">
+        <Header />
+  
+        <div className="w-full md:px-15 p-2 flex justify-end">
+          <span className="bg-white border p-1 rounded-[5px]">
+            <input
+              type="text"
+              placeholder="Search"
+              className="bg-transparent px-2 py-1 sm:w-[150px] w-[120px] outline-none"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <i className="fa-solid fa-magnifying-glass text-black/40 ml-1 bg-transparent ease duration-300 hover:text-black p-1 rounded-[5px] cursor-pointer"></i>
+          </span>
+        </div>
+  
+        <div className="h-[70vh] overflow-auto py-4 md:px-15 grid grid-cols-2 md:grid-cols-4 gap-4">
+          {filteredPokemons.map((pokemon) => (
+            <div
+              key={pokemon.id}
+              className="p-2 rounded text-center cursor-pointer"
+            >
+              <img
+                src={pokemon.sprites.front_default} alt={pokemon.name}
+                className="mx-auto w-[130px]"
+              />
+              <div className="bg-amber-400/10 border-blue-800/50 border-[2px] backdrop-blur-sm rounded-[5px] text-left p-2">
+                <h2 className="capitalize font-bold">{pokemon.name}</h2>
+                <p>
+                  Type: {pokemon.types.map((t) => t.type.name).join(", ")}
+                </p>
+              </div>
+            </div>
+          ))}
+          
+        </div>
+        <div className="text-center mt-4 mb-8">
+          {nextUrl && !loading && (
+            <button
+              onClick={fetchPokemons}
+              className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+            >
+              Load More
+            </button>
+          )}
+          {loading && <p className="text-sm text-gray-500 mt-2">Loading...</p>}
+        </div>
+        
+      </div>
+    );
+  };
+
+export default Pokedex

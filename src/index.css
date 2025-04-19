@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Rubik+Glitch&family=Rubik:ital,wght@0,300..900;1,300..900&family=Sora:wght@100..800&family=Varela+Round&display=swap');
+@import "tailwindcss";
+*{
+  box-sizing: border-box;
+  font-family: Varela Round;
+}
+
+:root {
+  --color-primary: #3B82F6;
+  --color-secondary: #F59E0B;
+  --color-accent: #D6C766;
+}
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+.bg-secondary {
+  background-color: var(--color-secondary);
+}
+
+.text-secondary {
+  color: var(--color-secondary);
+}
+
+.bg-accent {
+  background-color: var(--color-accent);
+}
+
+.text-accent {
+  color: var(--color-accent);
+}
+.platform::before{
+  content: "";
+  width: 100%;
+  height: 50%;
+  background-color: white; 
+  box-shadow: 0 0 10;
+  border:1px solid rgb(182, 181, 181);
+  position: absolute;
+  z-index: -1;
+  bottom: 0;
+  border-radius: 100%;
+}
+.platform::after{
+  content: "";
+  width: 100%;
+  height: 50%;
+  background-color: rgb(214, 214, 214); 
+  box-shadow: 0 0 10;
+  position: absolute;
+  z-index: -2;
+  bottom: 0;
+  border-radius: 100% 100% 0 0;
+}
+
+
+@layer utilities {
+  .clip-diagonal {
+    clip-path: polygon(30% 0, 0 100%, 100% 100%, 100% 0);
+  }
+
+}
