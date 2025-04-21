@@ -71,7 +71,7 @@ const Pokedex = () => {
 
     const searchPokemon = () => {
       if(searchTerm == ""){
-        window.location.href="/pokedex";
+        location.reload();
         //hays
       }else{
         Axios.get(`https://pokeapi.co/api/v2/pokemon/${searchTerm.toLowerCase()}`)

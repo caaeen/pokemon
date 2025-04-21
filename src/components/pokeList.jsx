@@ -1,5 +1,5 @@
 import React from 'react';
-
+import {Link} from 'react-router-dom'
 const typeColor = {
   grass: "bg-green-400",
   fire: "bg-red-400",
@@ -27,44 +27,45 @@ const PokeList = ({ pokemon, searchResult }) => {
   return (
     <div className="w-full h-full sm:gap-5 grid md:grid-cols-4 grid-cols-2 relative sm:px-20 py-5 px-5">
       {dataToShow.map((p) => (
-        <div key={p.id} className="p-2 rounded-xl cursor-pointer">
-          <div className="w-full flex justify-between text-gray-800/70">
-            <b>#{p.id}</b>
-            {searchResult && (
+       
+          <div key={p.id} className="p-2 rounded-xl ">
+            <div className="w-full flex justify-between text-gray-800/70">
+              <b>#{p.id}</b>
               <span className="p-1 bg-blue-600/50 hover:bg-blue-700 duration-300 ease-in text-white rounded text-[12px] flex items-center gap-1">
                 <i className="fa-solid fa-plus"></i>
                 <span>Team</span>
               </span>
-            )}
-          </div>
+            </div>
+         
+            <div className="platform pt-1 pb-2 relative">
+              <img
+                src={p.sprites.other["official-artwork"].front_default}
+                alt={p.name}
+                className="drop-shadow-[10px_0px_1px_rgba(0,0,0,0.5)] mx-auto w-[150px]"
+              />
+            </div>
+            <Link to={`/pokemon/${p.id}`}>
+              <div className="cursor-pointer border-[2px] border-blue-700 p-2 rounded-b-[5px] bg-amber-100 ease duration-300 hover:bg-amber-400/50">
+              <b>{p.name.charAt(0).toUpperCase() + p.name.slice(1)}</b>
+              <p className="mt-1 flex gap-2 flex-wrap">
+                {p.types.map((t, i) => {
+                  const type = t.type.name;
+                  const bgClass = typeColor[type] || "bg-gray-100";
 
-          <div className="platform pt-1 pb-2 relative">
-            <img
-              src={p.sprites.front_default}
-              alt={p.name}
-              className="drop-shadow-[10px_0px_1px_rgba(0,0,0,0.5)] mx-auto w-[150px]"
-            />
+                  return (
+                    <span
+                      key={i}
+                      className={`px-2 py-[1px] rounded text-[11px] text-white ${bgClass}`}
+                    >
+                      {type}
+                    </span>
+                  );
+                })}
+              </p>
+              </div>
+            </Link>
           </div>
-
-          <div className="border-[2px] border-blue-700 p-2 rounded-b-[5px] bg-amber-500/20 ease duration-300 hover:bg-amber-400/50">
-            <b>{p.name.charAt(0).toUpperCase() + p.name.slice(1)}</b>
-            <p className="mt-1 flex gap-2 flex-wrap">
-              {p.types.map((t, i) => {
-                const type = t.type.name;
-                const bgClass = typeColor[type] || "bg-gray-100";
-
-                return (
-                  <span
-                    key={i}
-                    className={`px-2 py-[1px] rounded text-[11px] text-white ${bgClass}`}
-                  >
-                    {type}
-                  </span>
-                );
-              })}
-            </p>
-          </div>
-        </div>
+        
       ))}
     </div>
   );
