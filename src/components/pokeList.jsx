@@ -1,5 +1,8 @@
 import React from 'react';
 import {Link} from 'react-router-dom'
+
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const typeColor = {
   grass: "bg-green-400",
   fire: "bg-red-400",
@@ -23,7 +26,29 @@ const typeColor = {
 
 const PokeList = ({ pokemon, searchResult }) => {
   const dataToShow = searchResult && searchResult !== "" ? [searchResult] : pokemon;
-
+  const playerId = localStorage.getItem('playerId');
+  const teamKey = `team-${playerId}`;
+  let check = JSON.parse(localStorage.getItem(teamKey)) || [];
+  const addToTeam = (pokemonId) => {
+    
+    let team = JSON.parse(localStorage.getItem(teamKey)) || [];
+  
+    if (team.includes(pokemonId)) {
+      toast.info("This Pokemon is already in your team.");
+      return;
+    }
+  
+    if (team.length >= 6) {
+     
+      toast.warn("Maximum of 6 Pokemon.");
+      return;
+    }
+  
+    team.push(pokemonId);
+    localStorage.setItem(teamKey, JSON.stringify(team));
+    toast.success("Pokemon added to your team!");
+  };
+  let color = ""
   return (
     <div className="w-full h-full sm:gap-5 grid md:grid-cols-4 grid-cols-2 relative sm:px-20 py-5 px-5">
       {dataToShow.map((p) => (
@@ -31,8 +56,9 @@ const PokeList = ({ pokemon, searchResult }) => {
           <div key={p.id} className="p-2 rounded-xl ">
             <div className="w-full flex justify-between text-gray-800/70">
               <b>#{p.id}</b>
-              <span className="p-1 bg-blue-600/50 hover:bg-blue-700 duration-300 ease-in text-white rounded text-[12px] flex items-center gap-1">
-                <i className="fa-solid fa-plus"></i>
+           
+              <span onClick={()=>addToTeam(p.id)} className="p-1 cursor-pointer bg-blue-600/50 hover:bg-blue-700 duration-300 ease-in text-white rounded text-[12px] flex items-center gap-1">
+                <i  className="fa-solid fa-plus"></i>
                 <span>Team</span>
               </span>
             </div>

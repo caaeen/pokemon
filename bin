@@ -1,91 +1,183 @@
-import {React, useState, useEffect} from 'react'
-import Header from './header.jsx'
-import '../index.css'
+import { React, useState, useEffect } from 'react';
+import Header from './header.jsx';
+import Wallpaper from '../assets/images/pokemon-wallpaper.png';
+import Axios from 'axios';
+import { useParams } from 'react-router-dom';
 
-const Pokedex = () => {
-    const [pokemons, setPokemons] = useState([]);
-    const [nextUrl, setNextUrl] = useState("https://pokeapi.co/api/v2/pokemon?limit=10");
-    const [loading, setLoading] = useState(false);
-    const [search, setSearch] = useState("");
+const typeColor = {
+  grass: "bg-green-400",
+  fire: "bg-red-400",
+  water: "bg-blue-400",
+  electric: "bg-yellow-300",
+  bug: "bg-lime-400",
+  poison: "bg-purple-400",
+  flying: "bg-indigo-300",
+  ground: "bg-yellow-600",
+  rock: "bg-gray-500",
+  psychic: "bg-pink-400",
+  ice: "bg-cyan-300",
+  dragon: "bg-purple-600",
+  dark: "bg-[#705746] text-white",
+  steel: "bg-gray-400",
+  fairy: "bg-pink-200",
+  normal: "bg-[#A8A77A] text-black",
+  fighting: "bg-[#C22E28]",
+  ghost: "bg-[#735797]",
+};
+
+const Pokemon = () => {
+  const { id } = useParams();
+  const [pokemon, setPokemon] = useState(null);
+  const [species, setSpecies] = useState(null);
+  const [weaknesses, setWeaknesses] = useState([]);
+  const [resistances, setResistances] = useState([]);
   
-    const fetchPokemons = async () => {
-      if (!nextUrl) return;
+  useEffect(() => {
+    const fetchPokemon = async () => {
+      try {
+        const res = await Axios.get(`https://pokeapi.co/api/v2/pokemon/${id}`);
+        const pokeData = res.data;
+        setPokemon(pokeData);
   
-      setLoading(true);
-      const res = await fetch(nextUrl);
-      const data = await res.json();
-      setNextUrl(data.next); // Save next batch URL
+        const speciesRes = await Axios.get(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
+        setSpecies(speciesRes.data);
   
-      const detailed = await Promise.all(
-        data.results.map(async (pokemon) => {
-          const res = await fetch(pokemon.url);
-          return await res.json();
-        })
-      );
+        const damageMap = {};
   
-      setPokemons((prev) => [...prev, ...detailed]); // Append
-      setLoading(false);
+        const typePromises = pokeData.types.map(async ({ type }) => {
+          const typeRes = await Axios.get(type.url);
+          const relations = typeRes.data.damage_relations;
+  
+          // Weaknesses (double_damage_from)
+          relations.double_damage_from.forEach(({ name }) => {
+            damageMap[name] = (damageMap[name] || 1) * 2;
+          });
+  
+          // Resistances (half_damage_to)
+          relations.half_damage_to.forEach(({ name }) => {
+            damageMap[name] = (damageMap[name] || 1) * 0.5;
+          });
+  
+          // Immunities (no_damage_from)
+          relations.no_damage_from.forEach(({ name }) => {
+            damageMap[name] = 0;
+          });
+        });
+  
+        await Promise.all(typePromises);
+  
+        // Final Weaknesses: Show types with ×2 multiplier
+        const finalWeaknesses = Object.entries(damageMap)
+          .filter(([type, multiplier]) => multiplier > 1)
+          .map(([type]) => type);
+  
+        // Final Resistances: Show types with ×0.5 multiplier
+        const finalResistances = Object.entries(damageMap)
+          .filter(([type, multiplier]) => multiplier < 1 && multiplier !== 0)
+          .map(([type]) => type);
+  
+        setWeaknesses(finalWeaknesses);
+        setResistances(finalResistances);
+  
+      } catch (err) {
+        console.error("Error fetching Pokémon:", err);
+      }
     };
   
-    useEffect(() => {
-      fetchPokemons();
-    }, []);
-  
-    const filteredPokemons = pokemons.filter((pokemon) =>
-      pokemon.name.toLowerCase().includes(search.toLowerCase())
-    );
-  
-    return (
-      <div className="pokedex w-full min-h-svh">
-        <Header />
-  
-        <div className="w-full md:px-15 p-2 flex justify-end">
-          <span className="bg-white border p-1 rounded-[5px]">
-            <input
-              type="text"
-              placeholder="Search"
-              className="bg-transparent px-2 py-1 sm:w-[150px] w-[120px] outline-none"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <i className="fa-solid fa-magnifying-glass text-black/40 ml-1 bg-transparent ease duration-300 hover:text-black p-1 rounded-[5px] cursor-pointer"></i>
+    fetchPokemon();
+  }, [id]);
+
+  if (!pokemon) return <div>Loading...</div>;
+
+  return (
+    <div className="w-full h-full grid mb-20">
+      <Header />
+      <img src={Wallpaper} alt="" className="opacity-60 fixed w-full h-full object-cover -z-10" />
+      <div className="md:w-[80%] w-full h-full flex sm:flex-row mt-10 gap-3 flex-col place-self-center">
+        
+        {/* LEFT PANEL */}
+        <div className="flex-1 p-2 flex flex-col items-center gap-3">
+          <img src={pokemon.sprites.other["official-artwork"].front_default} alt="" className="w-full min-h-[300px] object-cover" />
+          <span className="text-[28px] text-center text-[#737373]">
+            #{pokemon.id} <span className="font-bold">{pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}</span>
+          </span>
+          <div className="w-full flex justify-center gap-2 flex-wrap">
+            {pokemon.types.map((t, i) => (
+              <span key={i} className={`${typeColor[t.type.name]} py-1 px-5 text-white rounded-md text-center capitalize`}>
+                {t.type.name}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* BASE STATS */}
+        <div className="flex-1 p-2">
+          <b className="text-[24px] text-[#737373]">Base Stats</b>
+          {pokemon.stats.map((stat, i) => {
+            const name = stat.stat.name.replace('-', ' ');
+            const value = stat.base_stat;
+            return (
+              <div className="mt-4" key={i}>
+                <span className="font-bold text-[#737373] capitalize">{name}:</span>
+                <span className='text-[#737373]'> {value}</span><br />
+                <div className="bg-[#d9d9d9] h-2 rounded mt-2 w-full relative">
+                  <div className="bg-[#ffbd59] h-full rounded" style={{ width: `${value * 0.45}%` }}></div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* RIGHT PANEL */}
+        <div className="flex-1 p-2">
+          <div>
+            <b className="text-[24px] text-[#737373]">Pokedex Entry</b>
+            <p className="text-[#737373]">{species?.flavor_text_entries.find(entry => entry.language.name === 'en')?.flavor_text.replace(/\f/g, ' ')}</p>
+            <div className="shadow-md p-4 mt-3 rounded bg-white">
+                <p className="text-[#737373]"><span className="font-bold ">Height:</span> {pokemon.height / 10} m</p><br />
+                <p className="text-[#737373]"><span className="font-bold ">Weight:</span> {pokemon.weight / 10} kg</p>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <b className="text-[24px] text-[#737373]">Abilities</b>
+            <div className="flex flex-wrap mt-2 gap-3">
+              {pokemon.abilities.map((a, i) => (
+                <p key={i} className="px-5 py-1 border-[1px] border-[#737373] rounded text-[#737373] capitalize">{a.ability.name}</p>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4">
+          <b className="text-[24px] text-[#737373]">Weakness</b>
+          <span className="w-full flex justify-start flex-wrap mt-2 gap-3">
+            {weaknesses.map((w, i) => (
+              <span key={i} className={`py-1 px-5 text-white rounded-md text-center capitalize ${typeColor[w] || "bg-gray-600"}`}>
+                {w}
+              </span>
+            ))}
           </span>
         </div>
-  
-        <div className="h-[70vh] overflow-auto py-4 md:px-15 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {filteredPokemons.map((pokemon) => (
-            <div
-              key={pokemon.id}
-              className="p-2 rounded text-center cursor-pointer"
-            >
-              <img
-                src={pokemon.sprites.front_default} alt={pokemon.name}
-                className="mx-auto w-[130px]"
-              />
-              <div className="bg-amber-400/10 border-blue-800/50 border-[2px] backdrop-blur-sm rounded-[5px] text-left p-2">
-                <h2 className="capitalize font-bold">{pokemon.name}</h2>
-                <p>
-                  Type: {pokemon.types.map((t) => t.type.name).join(", ")}
-                </p>
-              </div>
-            </div>
-          ))}
-          
-        </div>
-        <div className="text-center mt-4 mb-8">
-          {nextUrl && !loading && (
-            <button
-              onClick={fetchPokemons}
-              className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
-            >
-              Load More
-            </button>
-          )}
-          {loading && <p className="text-sm text-gray-500 mt-2">Loading...</p>}
-        </div>
-        
-      </div>
-    );
-  };
 
-export default Pokedex
+
+        <div className="mt-4">
+          <b className="text-[24px] text-[#737373]">Resistance</b>
+          <span className="w-full flex justify-start flex-wrap mt-2 gap-3">
+            {resistances.map((r, i) => (
+              <span key={i} className={`py-1 px-5 text-white rounded-md text-center capitalize ${typeColor[r] || "bg-gray-600"}`}>
+                {r}
+              </span>
+            ))}
+          </span>
+        </div>
+
+
+
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+export default Pokemon;

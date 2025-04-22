@@ -4,7 +4,21 @@ import './index.css'
 import App from './App.jsx'
 import Pokedex from './components/pokedex.jsx'
 import Pokemon from './components/pokemon.jsx'
+import Team from './components/team.jsx'
+import Battle from './components/battle.jsx'
 import {createBrowserRouter, RouterProvider} from "react-router-dom"
+
+//Generate Player Id
+const generatePlayerId = () => {
+  let playerId = localStorage.getItem('playerId');
+  if (!playerId) {
+    playerId = 'player-' + Math.random().toString(36).substring(2, 9);
+    localStorage.setItem('playerId', playerId);
+  }
+  console.log(playerId);
+};
+
+generatePlayerId();
 
 const router = createBrowserRouter([
   {
@@ -19,7 +33,19 @@ const router = createBrowserRouter([
     path: "/pokemon/:id",
     element: <Pokemon/>,
     elementError: <div>Error 404</div>,
-  }
+  },{
+    path: "/team",
+    element: <Team/>,
+    elementError: <div>Error 404</div>,
+  },{
+    path: "/battle",
+    element: <Battle/>,
+    elementError: <div>Error 404</div>,
+  },{
+    path: "/pokedex/:bid",
+    element: <Pokedex/>,
+    elementError: <div>Error 404</div>,
+  },
 ])
 
 createRoot(document.getElementById('root')).render(

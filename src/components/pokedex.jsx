@@ -2,7 +2,9 @@ import {React, useState, useEffect} from 'react'
 import Header from './header.jsx'
 import PokeList from './pokeList.jsx'
 import Pagination from './pagination.jsx'
+import {useNavigate} from 'react-router-dom'
 
+import Loading from './util/loader.jsx'
 import '../index.css'
 import Wallpaper from '../assets/images/pokemon-wallpaper.png'
 import Axios from 'axios'
@@ -17,8 +19,38 @@ const Pokedex = () => {
   const [currentPageUrl, setCurrentPageUrl] = useState("https://pokeapi.co/api/v2/pokemon")
   const [nextPageUrl, setNextPageUrl] = useState()
   const [prevPageUrl, setPrevPageUrl] = useState()
-  
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true);
+
+  //Check for battle id
+  useEffect(() => {
+    const checkBattleQueue = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const bid = urlParams.get('bid');
+  
+      if (!bid) return;
+  
+      try {
+        const res = await Axios.get(`http://localhost:3000/queue/${bid}`);
+        if (res.data && res.data.status === 'pending') {
+          localStorage.setItem('scannedBattleId', bid);
+          toast.success("You have joined the battle queue!");
+        } else {
+          toast.warning("This battle queue is no longer active.");
+        }
+      } catch (err) {
+        if (err.response?.status === 404) {
+          toast.error("Invalid or expired battle ID.");
+        } else {
+          toast.error("Server error. Please try again later.");
+        }
+      }
+      
+    };
+  
+    checkBattleQueue();
+  }, []);
+
 
   useEffect(() => {
     setLoading(true);
@@ -59,7 +91,7 @@ const Pokedex = () => {
   
   
   
-    if(loading){return "Loading..."}
+    if(loading){return <Loading/>}
 
     function goToPrevPage(){
         setCurrentPageUrl(prevPageUrl);
@@ -72,7 +104,6 @@ const Pokedex = () => {
     const searchPokemon = () => {
       if(searchTerm == ""){
         location.reload();
-        //hays
       }else{
         Axios.get(`https://pokeapi.co/api/v2/pokemon/${searchTerm.toLowerCase()}`)
         .then((res) =>{ setSearchResult(res.data); console.log(res.data);})

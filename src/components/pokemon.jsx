@@ -3,7 +3,7 @@ import Header from './header.jsx';
 import Wallpaper from '../assets/images/pokemon-wallpaper.png';
 import Axios from 'axios';
 import { useParams } from 'react-router-dom';
-
+import Loading from './util/loader.jsx'
 const typeColor = {
   grass: "bg-green-400",
   fire: "bg-red-400",
@@ -76,7 +76,7 @@ const Pokemon = () => {
     fetchPokemon();
   }, [id]);
 
-  if (!pokemon) return <div>Loading...</div>;
+  if (!pokemon) return <Loading/>;
 
   return (
     <div className="w-full h-full grid mb-20">
@@ -110,7 +110,7 @@ const Pokemon = () => {
                 <span className="font-bold text-[#737373] capitalize">{name}:</span>
                 <span className='text-[#737373]'> {value}</span><br />
                 <div className="bg-[#d9d9d9] h-2 rounded mt-2 w-full relative">
-                  <div className="bg-[#ffbd59] h-full rounded" style={{ width: `${value * 0.45}%` }}></div>
+                  <div className="bg-[#ffbd59] h-full rounded" style={{ width: `${value * 0.39}%` }}></div>
                 </div>
               </div>
             );

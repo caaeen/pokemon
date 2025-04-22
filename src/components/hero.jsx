@@ -4,13 +4,15 @@ import Header from './header.jsx'
 import Charizard from '../assets/images/charizard.png'
 import Ash from '../assets/images/ash.jpg'
 import PokeBall from '../assets/images/pokeball.gif'
+import Wallpaper from '../assets/images/pokemon-wallpaper.png';
 import {Link} from 'react-router-dom'
 const Hero = () => {
   return (
     <>
     <div className='relative w-full min-h-[100vh] h-full border'>
-        <div className="absolute  w-[60%] h-full bg-accent clip-diagonal  top-0 right-0 -z-1"></div>
+        <div className="absolute sm:inline hidden  w-[60%] h-full bg-accent clip-diagonal  top-0 right-0 -z-1"></div>
         <Header/>
+        <img src={Wallpaper} alt="" className="sm:hidden inline opacity-60 fixed w-full h-full object-cover -z-10" />
         <div className='flex sm:flex-row flex-col-reverse'>
 
           <div className='sm:w-1/2  flex flex-col items-center justify-center sm:p-10 p-5'>
