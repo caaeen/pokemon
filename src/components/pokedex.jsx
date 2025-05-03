@@ -31,16 +31,17 @@ const Pokedex = () => {
       if (!bid) return;
   
       try {
-        const res = await Axios.get(`http://localhost:3000/queue/${bid}`);
+        const res = await Axios.get(`${import.meta.env.VITE_API_URL}/queue/${bid}`);
         if (res.data && res.data.status === 'pending') {
           localStorage.setItem('scannedBattleId', bid);
-          toast.success("You have joined the battle queue!");
+          //toast.success("You have joined the battle queue!");
+          navigate('/battle');
         } else {
           toast.warning("This battle queue is no longer active.");
         }
       } catch (err) {
         if (err.response?.status === 404) {
-          toast.error("Invalid or expired battle ID.");
+          toast.error("Invalid battle ID.");
         } else {
           toast.error("Server error. Please try again later.");
         }

@@ -13,14 +13,14 @@ const Battle = () => {
   const [scannedBattle, setScannedBattle] = useState(false);
   const [battleMetadata, setBattleMetadata] = useState(null);  
   const navigate = useNavigate();
-  
+
   const generateQR = async () => {
     const existingBattleId = localStorage.getItem("battleId"); 
     const playerId = localStorage.getItem("playerId");
   
     if (existingBattleId) {
       try {
-        await Axios.put(`${import.meta.env.VITE_API_URL}/queue/${existingBattleId}`, {
+        await Axios.put(`http://localhost:3000/queue/${existingBattleId}`, {
           status: "canceled",  
         });
         //toast.info("Previous battle canceled!");
@@ -40,7 +40,7 @@ const Battle = () => {
     const hostTeam = JSON.parse(localStorage.getItem(`team-${playerId}`)) || [];
   
     try {
-      await Axios.post(`${import.meta.env.VITE_API_URL}/queue`, {
+      await Axios.post("http://localhost:3000/queue", {
         id: newBattleId,
         hostId: playerId,
         opponentId: null,
@@ -56,20 +56,10 @@ const Battle = () => {
     }
   };
   
-  function checkTeamAndGenerateQR() {
-    const playerId = localStorage.getItem("playerId");
-    const teamKey = `team-${playerId}`;
-    const team = JSON.parse(localStorage.getItem(teamKey));
-
-    if (Array.isArray(team) && team.length === 6) {
-        generateQR();
-    } else {
-        toast.warn("You need 6 Pokémon to start the match");
-    }
-  }
+  
 
   const qrValue = battleId
-    ? `${import.meta.env.VITE_LOCAL_URL}/pokedex?bid=${battleId}` 
+    ? `http://localhost:5173/pokedex?bid=${battleId}` 
     : '';
 
   const checkScannedBattleId = async () => {
@@ -81,7 +71,7 @@ const Battle = () => {
     }
   
     try {
-      const res = await Axios.get(`${import.meta.env.VITE_API_URL}/queue/${battleId}`);
+      const res = await Axios.get(`http://localhost:3000/queue/${battleId}`);
   
       if (res.status === 200) {
         //console.log("Metadata:", res.data);
@@ -108,7 +98,7 @@ const Battle = () => {
     }
 
     try {
-      await Axios.put(`${import.meta.env.VITE_API_URL}/queue/${battleId}`, {
+      await Axios.put(`http://localhost:3000/queue/${battleId}`, {
         status: "declined", 
       });
 
@@ -124,17 +114,7 @@ const Battle = () => {
       toast.error("Failed to decline battle.");
     }
   };
-  function checkTeamAcceptBattle() {
-    const playerId = localStorage.getItem("playerId");
-    const teamKey = `team-${playerId}`;
-    const team = JSON.parse(localStorage.getItem(teamKey));
 
-    if (Array.isArray(team) && team.length === 6) {
-      acceptBattle();
-    } else {
-        toast.warn("You need 6 Pokémon to start the match");
-    }
-  }
   const acceptBattle = async () => {
     const battleId = localStorage.getItem('scannedBattleId');
     const playerId = localStorage.getItem('playerId');
@@ -145,7 +125,7 @@ const Battle = () => {
     }
   
     try {
-      const res = await Axios.get(`${import.meta.env.VITE_API_URL}/queue/${battleId}`);
+      const res = await Axios.get(`http://localhost:3000/queue/${battleId}`);
   
       if (res.status === 200) {
         const battleStatus = res.data.status;
@@ -161,7 +141,7 @@ const Battle = () => {
          
           const opponentTeam = JSON.parse(localStorage.getItem(`team-${playerId}`)) || [];
   
-          await Axios.put(`${import.meta.env.VITE_API_URL}/queue/${battleId}`, {
+          await Axios.put(`http://localhost:3000/queue/${battleId}`, {
             status: "accepted",
             hostId: hostId,
             opponentId: playerId
@@ -170,7 +150,7 @@ const Battle = () => {
           const timestamp = new Date().toISOString();  
         
 
-          await Axios.post(`${import.meta.env.VITE_API_URL}/battle`, {
+          await Axios.post('http://localhost:3000/battle', {
             id: active_battle_id,
             hostId: hostId,
             opponentId: playerId,
@@ -210,7 +190,7 @@ const Battle = () => {
     if (battleId) {
       interval = setInterval(async () => {
         try {
-          const res = await Axios.get(`${import.meta.env.VITE_API_URL}/queue/${battleId}`);
+          const res = await Axios.get(`http://localhost:3000/queue/${battleId}`);
           const status = res.data.status;
   
           if (status === "accepted") {
@@ -263,12 +243,12 @@ const Battle = () => {
             </div>
             {battleId ? (
                 
-                <div></div>
+                <div>{qrValue}</div>
               ) : (
                 <div></div>
               )}
             <button
-              onClick={(e)=>checkTeamAndGenerateQR()}
+              onClick={generateQR}
               className="p-2 rounded cursor-pointer shadow-md text-[#737373] bg-white hover:bg-blue-700/80 hover:text-white ease-linear duration-300"
             >
               Generate QR
@@ -290,7 +270,7 @@ const Battle = () => {
                   >
                     Decline
                   </button>
-                  <button onClick={(e)=>checkTeamAcceptBattle()} className='p-2 rounded bg-green-800/50 text-white hover:bg-green-800/80 cursor-pointer duration-300'>
+                  <button onClick={acceptBattle} className='p-2 rounded bg-green-800/50 text-white hover:bg-green-800/80 cursor-pointer duration-300'>
                     Accept
                   </button>
                 </div>

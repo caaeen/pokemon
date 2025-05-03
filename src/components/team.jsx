@@ -68,6 +68,9 @@ const MyTeam = () => {
   return (
     <div>
       <Header/>
+      <div className="p-5 text-start sm:ml-17 ">
+          <b className="text-[#737373] sm:text-2xl md:text-3xl text-[19px]">Trainer's Party </b>
+      </div>
       <img src={Wallpaper} alt="" className="opacity-60 fixed w-full h-full object-cover -z-10" />
       {team.length === 0 ? (
         <p>Your team is empty.</p>
